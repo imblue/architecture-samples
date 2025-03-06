@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.tasks
+package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
 /**
  * Used with the filter spinner in the tasks list.

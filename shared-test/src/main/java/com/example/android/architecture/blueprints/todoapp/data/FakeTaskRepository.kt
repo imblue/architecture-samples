@@ -79,13 +79,6 @@ class FakeTaskRepository : TaskRepository {
         return savedTasks.value[taskId]
     }
 
-    override suspend fun getTasks(forceUpdate: Boolean): List<Task> {
-        if (shouldThrowError) {
-            throw Exception("Test exception")
-        }
-        return observableTasks.first()
-    }
-
     override suspend fun updateTask(taskId: String, title: String, description: String) {
         val updatedTask = _savedTasks.value[taskId]?.copy(
             title = title,
@@ -128,12 +121,6 @@ class FakeTaskRepository : TaskRepository {
             val newTasks = LinkedHashMap<String, Task>(tasks)
             newTasks.remove(taskId)
             newTasks
-        }
-    }
-
-    override suspend fun deleteAllTasks() {
-        _savedTasks.update {
-            LinkedHashMap()
         }
     }
 

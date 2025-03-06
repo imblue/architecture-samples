@@ -16,7 +16,7 @@
 
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.example.android.architecture.blueprints.todoapp.addedittask
+package com.example.android.architecture.blueprints.todoapp.ui.addedittask
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column

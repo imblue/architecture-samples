@@ -23,9 +23,6 @@ package com.example.android.architecture.blueprints.todoapp.data
  * @param description description of the task
  * @param isCompleted whether or not this task is completed
  * @param id id of the task
- *
- * TODO: The constructor of this class should be `internal` but it is used in previews and tests
- *  so that's not possible until those previews/tests are refactored.
  */
 data class Task(
     val title: String = "",

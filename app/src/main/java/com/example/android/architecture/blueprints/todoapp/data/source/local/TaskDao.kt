@@ -67,7 +67,7 @@ interface TaskDao {
      * @param task the task to be inserted or updated.
      */
     @Upsert
-    suspend fun upsert(task: LocalTask)
+    suspend fun insertOrReplace(task: LocalTask)
 
     /**
      * Insert or update tasks in the database. If a task already exists, replace it.
@@ -75,7 +75,7 @@ interface TaskDao {
      * @param tasks the tasks to be inserted or updated.
      */
     @Upsert
-    suspend fun upsertAll(tasks: List<LocalTask>)
+    suspend fun insertOrReplaceAll(tasks: List<LocalTask>)
 
     /**
      * Update the complete status of a task

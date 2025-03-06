@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp
+package com.example.android.architecture.blueprints.todoapp.ui
 
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs.TASK_ID_ARG
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs.TITLE_ARG
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs.USER_MESSAGE_ARG
-import com.example.android.architecture.blueprints.todoapp.TodoScreens.ADD_EDIT_TASK_SCREEN
-import com.example.android.architecture.blueprints.todoapp.TodoScreens.STATISTICS_SCREEN
-import com.example.android.architecture.blueprints.todoapp.TodoScreens.TASKS_SCREEN
-import com.example.android.architecture.blueprints.todoapp.TodoScreens.TASK_DETAIL_SCREEN
 
 /**
  * Screens used in [TodoDestinations]
@@ -46,13 +39,13 @@ object TodoDestinationsArgs {
 }
 
 /**
- * Destinations used in the [TodoActivity]
+ * Destinations used in the [com.example.android.architecture.blueprints.todoapp.TodoActivity]
  */
 object TodoDestinations {
-    const val TASKS_ROUTE = "$TASKS_SCREEN?$USER_MESSAGE_ARG={$USER_MESSAGE_ARG}"
-    const val STATISTICS_ROUTE = STATISTICS_SCREEN
-    const val TASK_DETAIL_ROUTE = "$TASK_DETAIL_SCREEN/{$TASK_ID_ARG}"
-    const val ADD_EDIT_TASK_ROUTE = "$ADD_EDIT_TASK_SCREEN/{$TITLE_ARG}?$TASK_ID_ARG={$TASK_ID_ARG}"
+    const val TASKS_ROUTE = "${TodoScreens.TASKS_SCREEN}?${TodoDestinationsArgs.USER_MESSAGE_ARG}={${TodoDestinationsArgs.USER_MESSAGE_ARG}}"
+    const val STATISTICS_ROUTE = TodoScreens.STATISTICS_SCREEN
+    const val TASK_DETAIL_ROUTE = "${TodoScreens.TASK_DETAIL_SCREEN}/{${TodoDestinationsArgs.TASK_ID_ARG}}"
+    const val ADD_EDIT_TASK_ROUTE = "${TodoScreens.ADD_EDIT_TASK_SCREEN}/{${TodoDestinationsArgs.TITLE_ARG}}?${TodoDestinationsArgs.TASK_ID_ARG}={${TodoDestinationsArgs.TASK_ID_ARG}}"
 }
 
 /**
@@ -63,8 +56,8 @@ class TodoNavigationActions(private val navController: NavHostController) {
     fun navigateToTasks(userMessage: Int = 0) {
         val navigatesFromDrawer = userMessage == 0
         navController.navigate(
-            TASKS_SCREEN.let {
-                if (userMessage != 0) "$it?$USER_MESSAGE_ARG=$userMessage" else it
+            TodoScreens.TASKS_SCREEN.let {
+                if (userMessage != 0) "$it?${TodoDestinationsArgs.USER_MESSAGE_ARG}=$userMessage" else it
             }
         ) {
             popUpTo(navController.graph.findStartDestination().id) {
@@ -93,13 +86,13 @@ class TodoNavigationActions(private val navController: NavHostController) {
     }
 
     fun navigateToTaskDetail(taskId: String) {
-        navController.navigate("$TASK_DETAIL_SCREEN/$taskId")
+        navController.navigate("${TodoScreens.TASK_DETAIL_SCREEN}/$taskId")
     }
 
     fun navigateToAddEditTask(title: Int, taskId: String?) {
         navController.navigate(
-            "$ADD_EDIT_TASK_SCREEN/$title".let {
-                if (taskId != null) "$it?$TASK_ID_ARG=$taskId" else it
+            "${TodoScreens.ADD_EDIT_TASK_SCREEN}/$title".let {
+                if (taskId != null) "$it?${TodoDestinationsArgs.TASK_ID_ARG}=$taskId" else it
             }
         )
     }

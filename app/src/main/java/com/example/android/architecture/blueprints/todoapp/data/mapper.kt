@@ -42,8 +42,6 @@ fun Task.toLocal() = LocalTask(
     isCompleted = isCompleted,
 )
 
-fun List<Task>.toLocal() = map(Task::toLocal)
-
 // Local to External
 fun LocalTask.toExternal() = Task(
     id = id,

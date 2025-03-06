@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.statistics
+package com.example.android.architecture.blueprints.todoapp.ui.statistics
 
 import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.FakeTaskRepository
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.ui.statistics.StatisticsViewModel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

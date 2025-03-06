@@ -25,8 +25,6 @@ interface TaskRepository {
 
     fun getTasksStream(): Flow<List<Task>>
 
-    suspend fun getTasks(forceUpdate: Boolean = false): List<Task>
-
     suspend fun refresh()
 
     fun getTaskStream(taskId: String): Flow<Task?>
@@ -44,8 +42,6 @@ interface TaskRepository {
     suspend fun activateTask(taskId: String)
 
     suspend fun clearCompletedTasks()
-
-    suspend fun deleteAllTasks()
 
     suspend fun deleteTask(taskId: String)
 }

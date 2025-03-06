@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp
+package com.example.android.architecture.blueprints.todoapp.ui
 
 import android.app.Activity
 import androidx.compose.material3.DrawerState
@@ -32,13 +32,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs.TASK_ID_ARG
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs.TITLE_ARG
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs.USER_MESSAGE_ARG
-import com.example.android.architecture.blueprints.todoapp.addedittask.AddEditTaskScreen
-import com.example.android.architecture.blueprints.todoapp.statistics.StatisticsScreen
-import com.example.android.architecture.blueprints.todoapp.taskdetail.TaskDetailScreen
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksScreen
+import com.example.android.architecture.blueprints.todoapp.R
+import com.example.android.architecture.blueprints.todoapp.ui.addedittask.AddEditTaskScreen
+import com.example.android.architecture.blueprints.todoapp.ui.statistics.StatisticsScreen
+import com.example.android.architecture.blueprints.todoapp.ui.taskdetail.TaskDetailScreen
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksScreen
 import com.example.android.architecture.blueprints.todoapp.util.AppModalDrawer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -65,13 +63,13 @@ fun TodoNavGraph(
         composable(
             TodoDestinations.TASKS_ROUTE,
             arguments = listOf(
-                navArgument(USER_MESSAGE_ARG) { type = NavType.IntType; defaultValue = 0 }
+                navArgument(TodoDestinationsArgs.USER_MESSAGE_ARG) { type = NavType.IntType; defaultValue = 0 }
             )
         ) { entry ->
             AppModalDrawer(drawerState, currentRoute, navActions) {
                 TasksScreen(
-                    userMessage = entry.arguments?.getInt(USER_MESSAGE_ARG)!!,
-                    onUserMessageDisplayed = { entry.arguments?.putInt(USER_MESSAGE_ARG, 0) },
+                    userMessage = entry.arguments?.getInt(TodoDestinationsArgs.USER_MESSAGE_ARG)!!,
+                    onUserMessageDisplayed = { entry.arguments?.putInt(TodoDestinationsArgs.USER_MESSAGE_ARG, 0) },
                     onAddTask = { navActions.navigateToAddEditTask(R.string.add_task, null) },
                     onTaskClick = { task -> navActions.navigateToTaskDetail(task.id) },
                     openDrawer = { coroutineScope.launch { drawerState.open() } }
@@ -86,13 +84,13 @@ fun TodoNavGraph(
         composable(
             TodoDestinations.ADD_EDIT_TASK_ROUTE,
             arguments = listOf(
-                navArgument(TITLE_ARG) { type = NavType.IntType },
-                navArgument(TASK_ID_ARG) { type = NavType.StringType; nullable = true },
+                navArgument(TodoDestinationsArgs.TITLE_ARG) { type = NavType.IntType },
+                navArgument(TodoDestinationsArgs.TASK_ID_ARG) { type = NavType.StringType; nullable = true },
             )
         ) { entry ->
-            val taskId = entry.arguments?.getString(TASK_ID_ARG)
+            val taskId = entry.arguments?.getString(TodoDestinationsArgs.TASK_ID_ARG)
             AddEditTaskScreen(
-                topBarTitle = entry.arguments?.getInt(TITLE_ARG)!!,
+                topBarTitle = entry.arguments?.getInt(TodoDestinationsArgs.TITLE_ARG)!!,
                 onTaskUpdate = {
                     navActions.navigateToTasks(
                         if (taskId == null) ADD_EDIT_RESULT_OK else EDIT_RESULT_OK

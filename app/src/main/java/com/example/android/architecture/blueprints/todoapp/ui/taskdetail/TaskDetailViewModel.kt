@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.taskdetail
+package com.example.android.architecture.blueprints.todoapp.ui.taskdetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.TodoDestinationsArgs
+import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinationsArgs
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
 import com.example.android.architecture.blueprints.todoapp.util.Async

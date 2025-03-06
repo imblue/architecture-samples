@@ -18,13 +18,10 @@ package com.example.android.architecture.blueprints.todoapp.data
 
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskDao
 import com.example.android.architecture.blueprints.todoapp.data.source.network.NetworkDataSource
-import com.example.android.architecture.blueprints.todoapp.di.ApplicationScope
-import com.example.android.architecture.blueprints.todoapp.di.DefaultDispatcher
+import com.example.android.architecture.blueprints.todoapp.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
@@ -35,31 +32,24 @@ import javax.inject.Singleton
  *
  * @param networkDataSource - The network data source
  * @param localDataSource - The local data source
- * @param dispatcher - The dispatcher to be used for long running or complex operations, such as ID
- * generation or mapping many models.
- * @param scope - The coroutine scope used for deferred jobs where the result isn't important, such
- * as sending data to the network.
+ * @param dispatcherIO - The dispatcher to be used for long running or complex operations, such as
+ * network calls. Using a dedicated dispatcher ensures that the operations do not block the main thread.
  */
 @Singleton
-class DefaultTaskRepository @Inject constructor(
+class TaskRepositoryImpl @Inject constructor(
     private val networkDataSource: NetworkDataSource,
     private val localDataSource: TaskDao,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
-    @ApplicationScope private val scope: CoroutineScope,
+    @IoDispatcher private val dispatcherIO: CoroutineDispatcher,
 ) : TaskRepository {
 
     override suspend fun createTask(title: String, description: String): String {
-        // ID creation might be a complex operation so it's executed using the supplied
-        // coroutine dispatcher
-        val taskId = withContext(dispatcher) {
-            UUID.randomUUID().toString()
-        }
+        val taskId = UUID.randomUUID().toString()
         val task = Task(
             title = title,
             description = description,
             id = taskId,
         )
-        localDataSource.upsert(task.toLocal())
+        localDataSource.insertOrReplace(task.toLocal())
         saveTasksToNetwork()
         return taskId
     }
@@ -70,24 +60,13 @@ class DefaultTaskRepository @Inject constructor(
             description = description
         ) ?: throw Exception("Task (id $taskId) not found")
 
-        localDataSource.upsert(task.toLocal())
+        localDataSource.insertOrReplace(task.toLocal())
         saveTasksToNetwork()
-    }
-
-    override suspend fun getTasks(forceUpdate: Boolean): List<Task> {
-        if (forceUpdate) {
-            refresh()
-        }
-        return withContext(dispatcher) {
-            localDataSource.getAll().toExternal()
-        }
     }
 
     override fun getTasksStream(): Flow<List<Task>> {
         return localDataSource.observeAll().map { tasks ->
-            withContext(dispatcher) {
-                tasks.toExternal()
-            }
+            tasks.toExternal()
         }
     }
 
@@ -127,11 +106,6 @@ class DefaultTaskRepository @Inject constructor(
         saveTasksToNetwork()
     }
 
-    override suspend fun deleteAllTasks() {
-        localDataSource.deleteAll()
-        saveTasksToNetwork()
-    }
-
     override suspend fun deleteTask(taskId: String) {
         localDataSource.deleteById(taskId)
         saveTasksToNetwork()
@@ -155,10 +129,10 @@ class DefaultTaskRepository @Inject constructor(
      * `withContext` is used here in case the bulk `toLocal` mapping operation is complex.
      */
     override suspend fun refresh() {
-        withContext(dispatcher) {
+        withContext(dispatcherIO) {
             val remoteTasks = networkDataSource.loadTasks()
             localDataSource.deleteAll()
-            localDataSource.upsertAll(remoteTasks.toLocal())
+            localDataSource.insertOrReplaceAll(remoteTasks.toLocal())
         }
     }
 
@@ -170,18 +144,16 @@ class DefaultTaskRepository @Inject constructor(
      * should provide a mechanism for failures to be communicated back to the user so that
      * they are aware that their data isn't being backed up.
      */
-    private fun saveTasksToNetwork() {
-        scope.launch {
-            try {
-                val localTasks = localDataSource.getAll()
-                val networkTasks = withContext(dispatcher) {
-                    localTasks.toNetwork()
-                }
+    private suspend fun saveTasksToNetwork() {
+        try {
+            val localTasks = localDataSource.getAll()
+            withContext(dispatcherIO) {
+                val networkTasks = localTasks.toNetwork()
                 networkDataSource.saveTasks(networkTasks)
-            } catch (e: Exception) {
-                // In a real app you'd handle the exception e.g. by exposing a `networkStatus` flow
-                // to an app level UI state holder which could then display a Toast message.
             }
+        } catch (e: Exception) {
+            // In a real app you'd handle the exception e.g. by exposing a `networkStatus` flow
+            // to an app level UI state holder which could then display a Toast message.
         }
     }
 }

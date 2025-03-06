@@ -20,6 +20,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.android.architecture.blueprints.todoapp.ui.TodoNavGraph
+import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**

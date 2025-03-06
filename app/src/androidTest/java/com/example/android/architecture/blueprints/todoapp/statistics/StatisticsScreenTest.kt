@@ -24,8 +24,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.HiltTestActivity
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.TodoTheme
+import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
+import com.example.android.architecture.blueprints.todoapp.ui.statistics.StatisticsScreen
+import com.example.android.architecture.blueprints.todoapp.ui.statistics.StatisticsViewModel
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi

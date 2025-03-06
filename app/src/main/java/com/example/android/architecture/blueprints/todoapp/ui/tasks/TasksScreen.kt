@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.tasks
+package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -56,11 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.TodoTheme
+import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ACTIVE_TASKS
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ALL_TASKS
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.COMPLETED_TASKS
 import com.example.android.architecture.blueprints.todoapp.util.LoadingContent
 import com.example.android.architecture.blueprints.todoapp.util.TasksTopAppBar
 

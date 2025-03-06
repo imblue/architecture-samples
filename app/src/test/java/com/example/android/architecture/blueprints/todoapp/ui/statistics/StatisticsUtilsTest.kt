@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.statistics
+package com.example.android.architecture.blueprints.todoapp.ui.statistics
 
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.ui.statistics.getActiveAndCompletedStats
 import org.hamcrest.core.Is.`is`
 import org.junit.Assert.assertThat
 import org.junit.Test

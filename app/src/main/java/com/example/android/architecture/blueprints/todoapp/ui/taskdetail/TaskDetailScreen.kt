@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.taskdetail
+package com.example.android.architecture.blueprints.todoapp.ui.taskdetail
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

@@ -20,7 +20,7 @@ package com.example.android.architecture.blueprints.todoapp.data.source.network
  * Internal model used to represent a task obtained from the network. This is used inside the data
  * layer only.
  *
- * See ModelMappingExt.kt for mapping functions used to convert this model to other
+ * See mapper.kt for mapping functions used to convert this model to other
  * models.
  */
 data class NetworkTask(

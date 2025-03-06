@@ -21,7 +21,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
-class TaskNetworkDataSource @Inject constructor() : NetworkDataSource {
+class NetworkDataSourceImpl @Inject constructor() : NetworkDataSource {
 
     // A mutex is used to ensure that reads and writes are thread-safe.
     private val accessMutex = Mutex()

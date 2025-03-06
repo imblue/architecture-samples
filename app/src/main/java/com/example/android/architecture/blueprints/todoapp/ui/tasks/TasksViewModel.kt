@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.tasks
+package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.android.architecture.blueprints.todoapp.ADD_EDIT_RESULT_OK
-import com.example.android.architecture.blueprints.todoapp.DELETE_RESULT_OK
-import com.example.android.architecture.blueprints.todoapp.EDIT_RESULT_OK
+import com.example.android.architecture.blueprints.todoapp.ui.ADD_EDIT_RESULT_OK
+import com.example.android.architecture.blueprints.todoapp.ui.DELETE_RESULT_OK
+import com.example.android.architecture.blueprints.todoapp.ui.EDIT_RESULT_OK
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
-import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ACTIVE_TASKS
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ALL_TASKS
+import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.COMPLETED_TASKS
 import com.example.android.architecture.blueprints.todoapp.util.Async
 import com.example.android.architecture.blueprints.todoapp.util.WhileUiSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -98,6 +98,10 @@ class TasksViewModel @Inject constructor(
             started = WhileUiSubscribed,
             initialValue = TasksUiState(isLoading = true)
         )
+
+    init {
+        refresh()
+    }
 
     fun setFiltering(requestType: TasksFilterType) {
         savedStateHandle[TASKS_FILTER_SAVED_STATE_KEY] = requestType

@@ -54,7 +54,7 @@ class TaskDaoTest {
             id = "id",
             isCompleted = false,
         )
-        database.taskDao().upsert(task)
+        database.taskDao().insertOrReplace(task)
 
         // WHEN - Get the task by id from the database
         val loaded = database.taskDao().getById(task.id)
@@ -76,7 +76,7 @@ class TaskDaoTest {
             id = "id",
             isCompleted = false,
         )
-        database.taskDao().upsert(task)
+        database.taskDao().insertOrReplace(task)
 
         // When a task with the same id is inserted
         val newTask = LocalTask(
@@ -85,7 +85,7 @@ class TaskDaoTest {
             isCompleted = true,
             id = task.id
         )
-        database.taskDao().upsert(newTask)
+        database.taskDao().insertOrReplace(newTask)
 
         // THEN - The loaded data contains the expected values
         val loaded = database.taskDao().getById(task.id)
@@ -104,7 +104,7 @@ class TaskDaoTest {
             id = "id",
             isCompleted = false,
         )
-        database.taskDao().upsert(task)
+        database.taskDao().insertOrReplace(task)
 
         // WHEN - Get tasks from the database
         val tasks = database.taskDao().getAll()
@@ -127,7 +127,7 @@ class TaskDaoTest {
             isCompleted = false,
         )
 
-        database.taskDao().upsert(originalTask)
+        database.taskDao().insertOrReplace(originalTask)
 
         // When the task is updated
         val updatedTask = LocalTask(
@@ -136,7 +136,7 @@ class TaskDaoTest {
             isCompleted = true,
             id = originalTask.id
         )
-        database.taskDao().upsert(updatedTask)
+        database.taskDao().insertOrReplace(updatedTask)
 
         // THEN - The loaded data contains the expected values
         val loaded = database.taskDao().getById(originalTask.id)
@@ -155,7 +155,7 @@ class TaskDaoTest {
             id = "id",
             isCompleted = true
         )
-        database.taskDao().upsert(task)
+        database.taskDao().insertOrReplace(task)
 
         // When the task is updated
         database.taskDao().updateCompleted(task.id, false)
@@ -177,7 +177,7 @@ class TaskDaoTest {
             id = "id",
             isCompleted = false,
         )
-        database.taskDao().upsert(task)
+        database.taskDao().insertOrReplace(task)
 
         // When deleting a task by id
         database.taskDao().deleteById(task.id)
@@ -190,7 +190,7 @@ class TaskDaoTest {
     @Test
     fun deleteTasksAndGettingTasks() = runTest {
         // Given a task inserted
-        database.taskDao().upsert(
+        database.taskDao().insertOrReplace(
             LocalTask(
                 title = "title",
                 description = "description",
@@ -210,7 +210,7 @@ class TaskDaoTest {
     @Test
     fun deleteCompletedTasksAndGettingTasks() = runTest {
         // Given a completed task inserted
-        database.taskDao().upsert(
+        database.taskDao().insertOrReplace(
             LocalTask(title = "completed", description = "task", id = "id", isCompleted = true)
         )
 
