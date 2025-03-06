@@ -18,8 +18,7 @@ package com.example.android.architecture.blueprints.todoapp.data
 
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskDao
 import com.example.android.architecture.blueprints.todoapp.data.source.network.NetworkDataSource
-import com.example.android.architecture.blueprints.todoapp.di.IoDispatcher
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -32,14 +31,11 @@ import javax.inject.Singleton
  *
  * @param networkDataSource - The network data source
  * @param localDataSource - The local data source
- * @param dispatcherIO - The dispatcher to be used for long running or complex operations, such as
- * network calls. Using a dedicated dispatcher ensures that the operations do not block the main thread.
  */
 @Singleton
 class TaskRepositoryImpl @Inject constructor(
     private val networkDataSource: NetworkDataSource,
     private val localDataSource: TaskDao,
-    @IoDispatcher private val dispatcherIO: CoroutineDispatcher,
 ) : TaskRepository {
 
     override suspend fun createTask(title: String, description: String): String {
@@ -129,7 +125,7 @@ class TaskRepositoryImpl @Inject constructor(
      * `withContext` is used here in case the bulk `toLocal` mapping operation is complex.
      */
     override suspend fun refresh() {
-        withContext(dispatcherIO) {
+        withContext(Dispatchers.IO) {
             val remoteTasks = networkDataSource.loadTasks()
             localDataSource.deleteAll()
             localDataSource.insertOrReplaceAll(remoteTasks.toLocal())
@@ -147,7 +143,7 @@ class TaskRepositoryImpl @Inject constructor(
     private suspend fun saveTasksToNetwork() {
         try {
             val localTasks = localDataSource.getAll()
-            withContext(dispatcherIO) {
+            withContext(Dispatchers.IO) {
                 val networkTasks = localTasks.toNetwork()
                 networkDataSource.saveTasks(networkTasks)
             }
