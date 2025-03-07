@@ -116,6 +116,8 @@ class TasksViewModel @Inject constructor(
     }
 
     fun completeTask(task: Task, completed: Boolean) = viewModelScope.launch {
+        _isLoading.value = true
+
         if (completed) {
             taskRepository.completeTask(task.id)
             showSnackbarMessage(R.string.task_marked_complete)
@@ -123,6 +125,8 @@ class TasksViewModel @Inject constructor(
             taskRepository.activateTask(task.id)
             showSnackbarMessage(R.string.task_marked_active)
         }
+
+        _isLoading.value = false
     }
 
     fun showEditResultMessage(result: Int) {

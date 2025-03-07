@@ -16,13 +16,10 @@
 
 package com.example.android.architecture.blueprints.todoapp.util
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-
-val primaryDarkColor: Color = Color(0xFF263238)
 
 /**
  * Display an initial empty state or swipe to refresh content.
@@ -35,6 +32,7 @@ val primaryDarkColor: Color = Color(0xFF263238)
  * @param content (slot) the main content to show
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun LoadingContent(
     loading: Boolean,
     empty: Boolean,
@@ -43,14 +41,15 @@ fun LoadingContent(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    if (empty) {
-        emptyContent()
-    } else {
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(loading),
-            onRefresh = onRefresh,
-            modifier = modifier,
-            content = content,
-        )
+    PullToRefreshBox(
+        loading,
+        onRefresh,
+        modifier
+    ) {
+        if (empty) {
+            emptyContent()
+        } else {
+            content()
+        }
     }
 }

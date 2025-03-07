@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -142,31 +145,32 @@ private fun TasksContent(
 ) {
     LoadingContent(
         loading = loading,
-        empty = tasks.isEmpty() && !loading,
+        empty = tasks.isEmpty(),
         emptyContent = { TasksEmptyContent(noTasksLabel, noTasksIconRes, modifier) },
         onRefresh = onRefresh
     ) {
-        Column(
+        LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = dimensionResource(id = R.dimen.horizontal_margin))
         ) {
-            Text(
-                text = stringResource(currentFilteringLabel),
-                modifier = Modifier.padding(
-                    horizontal = dimensionResource(id = R.dimen.list_item_padding),
-                    vertical = dimensionResource(id = R.dimen.vertical_margin)
-                ),
-                style = MaterialTheme.typography.headlineSmall
-            )
-            LazyColumn {
-                items(tasks) { task ->
-                    TaskItem(
-                        task = task,
-                        onTaskClick = onTaskClick,
-                        onCheckedChange = { onTaskCheckedChange(task, it) }
-                    )
-                }
+            stickyHeader("header") {
+                Text(
+                    text = stringResource(currentFilteringLabel),
+                    modifier = Modifier.padding(
+                        horizontal = dimensionResource(id = R.dimen.list_item_padding),
+                        vertical = dimensionResource(id = R.dimen.vertical_margin)
+                    ),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }
+
+            items(tasks, { it.id }) { task ->
+                TaskItem(
+                    task = task,
+                    onTaskClick = onTaskClick,
+                    onCheckedChange = { onTaskCheckedChange(task, it) }
+                )
             }
         }
     }
