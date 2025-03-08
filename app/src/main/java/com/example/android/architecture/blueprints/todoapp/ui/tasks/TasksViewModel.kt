@@ -28,12 +28,11 @@ import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ACTIVE_TASKS
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.COMPLETED_TASKS
-import com.example.android.architecture.blueprints.todoapp.util.Async
-import com.example.android.architecture.blueprints.todoapp.util.WhileUiSubscribed
+import com.example.android.architecture.blueprints.todoapp.util.asResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -66,36 +65,33 @@ class TasksViewModel @Inject constructor(
     private val _filterUiInfo = _savedFilterType.map { getFilterUiInfo(it) }.distinctUntilChanged()
     private val _userMessage: MutableStateFlow<Int?> = MutableStateFlow(null)
     private val _isLoading = MutableStateFlow(false)
+
     private val _filteredTasksAsync =
         combine(taskRepository.getTasksStream(), _savedFilterType) { tasks, type ->
             filterTasks(tasks, type)
         }
-            .map { Async.Success(it) }
-            .catch<Async<List<Task>>> { emit(Async.Error(R.string.loading_tasks_error)) }
+            .asResult()
 
     val uiState: StateFlow<TasksUiState> = combine(
         _filterUiInfo, _isLoading, _userMessage, _filteredTasksAsync
     ) { filterUiInfo, isLoading, userMessage, tasksAsync ->
-        when (tasksAsync) {
-            Async.Loading -> {
-                TasksUiState(isLoading = true)
-            }
-            is Async.Error -> {
-                TasksUiState(userMessage = tasksAsync.errorMessage)
-            }
-            is Async.Success -> {
-                TasksUiState(
-                    items = tasksAsync.data,
-                    filteringUiInfo = filterUiInfo,
-                    isLoading = isLoading,
-                    userMessage = userMessage
-                )
-            }
+        if (tasksAsync.isSuccess) {
+            TasksUiState(
+                items = tasksAsync.getOrNull() ?: emptyList(),
+                filteringUiInfo = filterUiInfo,
+                isLoading = isLoading,
+                userMessage = userMessage,
+            )
+        } else {
+            TasksUiState(
+                isLoading = isLoading,
+                userMessage = R.string.loading_tasks_error,
+            )
         }
     }
         .stateIn(
             scope = viewModelScope,
-            started = WhileUiSubscribed,
+            started = SharingStarted.Eagerly,
             initialValue = TasksUiState(isLoading = true)
         )
 
@@ -162,6 +158,7 @@ class TasksViewModel @Inject constructor(
                 ACTIVE_TASKS -> if (task.isActive) {
                     tasksToShow.add(task)
                 }
+
                 COMPLETED_TASKS -> if (task.isCompleted) {
                     tasksToShow.add(task)
                 }
@@ -178,12 +175,14 @@ class TasksViewModel @Inject constructor(
                     R.drawable.logo_no_fill
                 )
             }
+
             ACTIVE_TASKS -> {
                 FilteringUiInfo(
                     R.string.label_active, R.string.no_tasks_active,
                     R.drawable.ic_check_circle_96dp
                 )
             }
+
             COMPLETED_TASKS -> {
                 FilteringUiInfo(
                     R.string.label_completed, R.string.no_tasks_completed,

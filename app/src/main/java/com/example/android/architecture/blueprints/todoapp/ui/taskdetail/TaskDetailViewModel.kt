@@ -23,16 +23,16 @@ import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinationsArgs
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
-import com.example.android.architecture.blueprints.todoapp.util.Async
-import com.example.android.architecture.blueprints.todoapp.util.WhileUiSubscribed
+import com.example.android.architecture.blueprints.todoapp.util.asResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -59,52 +59,56 @@ class TaskDetailViewModel @Inject constructor(
     private val _userMessage: MutableStateFlow<Int?> = MutableStateFlow(null)
     private val _isLoading = MutableStateFlow(false)
     private val _isTaskDeleted = MutableStateFlow(false)
+
     private val _taskAsync = taskRepository.getTaskStream(taskId)
-        .map { handleTask(it) }
-        .catch { emit(Async.Error(R.string.loading_task_error)) }
+        .onEach {
+            if (it == null) {
+                _userMessage.value = R.string.task_not_found
+            }
+        }
+        .asResult()
 
     val uiState: StateFlow<TaskDetailUiState> = combine(
         _userMessage, _isLoading, _isTaskDeleted, _taskAsync
     ) { userMessage, isLoading, isTaskDeleted, taskAsync ->
-        when (taskAsync) {
-            Async.Loading -> {
-                TaskDetailUiState(isLoading = true)
-            }
-            is Async.Error -> {
-                TaskDetailUiState(
-                    userMessage = taskAsync.errorMessage,
-                    isTaskDeleted = isTaskDeleted
-                )
-            }
-            is Async.Success -> {
-                TaskDetailUiState(
-                    task = taskAsync.data,
-                    isLoading = isLoading,
-                    userMessage = userMessage,
-                    isTaskDeleted = isTaskDeleted
-                )
-            }
+        if (taskAsync.isSuccess) {
+            TaskDetailUiState(
+                task = taskAsync.getOrNull(),
+                isLoading = isLoading,
+                userMessage = userMessage,
+                isTaskDeleted = isTaskDeleted
+            )
+        } else {
+            TaskDetailUiState(
+                isLoading = isLoading,
+                userMessage = R.string.loading_task_error,
+                isTaskDeleted = isTaskDeleted
+            )
         }
     }
         .stateIn(
             scope = viewModelScope,
-            started = WhileUiSubscribed,
+            started = SharingStarted.Eagerly,
             initialValue = TaskDetailUiState(isLoading = true)
         )
 
     fun deleteTask() = viewModelScope.launch {
-        taskRepository.deleteTask(taskId)
-        _isTaskDeleted.value = true
+        runCatching { taskRepository.deleteTask(taskId) }
+            .onSuccess { _isTaskDeleted.value = true }
+            .onFailure { Timber.e(it) }
     }
 
     fun setCompleted(completed: Boolean) = viewModelScope.launch {
         val task = uiState.value.task ?: return@launch
+
         if (completed) {
-            taskRepository.completeTask(task.id)
-            showSnackbarMessage(R.string.task_marked_complete)
+            runCatching { taskRepository.completeTask(task.id) }
+                .onSuccess { showSnackbarMessage(R.string.task_marked_complete) }
+                .onFailure { Timber.e(it) }
         } else {
-            taskRepository.activateTask(task.id)
-            showSnackbarMessage(R.string.task_marked_active)
+            runCatching { taskRepository.activateTask(task.id) }
+                .onSuccess { showSnackbarMessage(R.string.task_marked_active) }
+                .onFailure { Timber.e(it) }
         }
     }
 
@@ -122,12 +126,5 @@ class TaskDetailViewModel @Inject constructor(
 
     private fun showSnackbarMessage(message: Int) {
         _userMessage.value = message
-    }
-
-    private fun handleTask(task: Task?): Async<Task?> {
-        if (task == null) {
-            return Async.Error(R.string.task_not_found)
-        }
-        return Async.Success(task)
     }
 }

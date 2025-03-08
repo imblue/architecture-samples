@@ -18,14 +18,15 @@ package com.example.android.architecture.blueprints.todoapp.ui.statistics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
-import com.example.android.architecture.blueprints.todoapp.util.Async
-import com.example.android.architecture.blueprints.todoapp.util.WhileUiSubscribed
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -38,7 +39,8 @@ data class StatisticsUiState(
     val isEmpty: Boolean = false,
     val isLoading: Boolean = false,
     val activeTasksPercent: Float = 0f,
-    val completedTasksPercent: Float = 0f
+    val completedTasksPercent: Float = 0f,
+    val throwable: Throwable? = null
 )
 
 /**
@@ -49,40 +51,44 @@ class StatisticsViewModel @Inject constructor(
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(true)
+    private val _error = MutableStateFlow<Throwable?>(null)
+    private val _tasks: Flow<Result<List<Task>>> = taskRepository.getTasksStream()
+        .map { Result.success(it) }
+        .catch { t -> emit(Result.failure(t)) }
+
     val uiState: StateFlow<StatisticsUiState> =
-        taskRepository.getTasksStream()
-            .map { Async.Success(it) }
-            .catch<Async<List<Task>>> { emit(Async.Error(R.string.loading_tasks_error)) }
-            .map { taskAsync -> produceStatisticsUiState(taskAsync) }
+        combine(_isLoading, _error, _tasks) { loading, error, tasks ->
+            produceStatisticsUiState(loading, error, tasks)
+        }
             .stateIn(
                 scope = viewModelScope,
-                started = WhileUiSubscribed,
+                started = SharingStarted.Eagerly,
                 initialValue = StatisticsUiState(isLoading = true)
             )
 
     fun refresh() {
+        _isLoading.value = true
         viewModelScope.launch {
-            taskRepository.refresh()
+            runCatching { taskRepository.refresh() }
+                .onFailure { _error.value = it }
+                .let { _isLoading.value = false }
         }
     }
 
-    private fun produceStatisticsUiState(taskLoad: Async<List<Task>>) =
-        when (taskLoad) {
-            Async.Loading -> {
-                StatisticsUiState(isLoading = true, isEmpty = true)
-            }
-            is Async.Error -> {
-                // TODO: Show error message?
-                StatisticsUiState(isEmpty = true, isLoading = false)
-            }
-            is Async.Success -> {
-                val stats = getActiveAndCompletedStats(taskLoad.data)
-                StatisticsUiState(
-                    isEmpty = taskLoad.data.isEmpty(),
-                    activeTasksPercent = stats.activeTasksPercent,
-                    completedTasksPercent = stats.completedTasksPercent,
-                    isLoading = false
-                )
-            }
-        }
+    private fun produceStatisticsUiState(
+        loading: Boolean,
+        error: Throwable?,
+        taskLoad: Result<List<Task>>
+    ): StatisticsUiState {
+        val stats = taskLoad.getOrNull()?.let { data -> getActiveAndCompletedStats(data) }
+
+        return StatisticsUiState(
+            isLoading = loading,
+            isEmpty = taskLoad.getOrNull().isNullOrEmpty(),
+            activeTasksPercent = stats?.activeTasksPercent ?: 0f,
+            completedTasksPercent = stats?.completedTasksPercent ?: 0f,
+            throwable = error ?: taskLoad.exceptionOrNull(),
+        )
+    }
 }

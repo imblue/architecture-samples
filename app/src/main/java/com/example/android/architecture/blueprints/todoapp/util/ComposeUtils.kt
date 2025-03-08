@@ -20,6 +20,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 /**
  * Display an initial empty state or swipe to refresh content.
@@ -53,3 +56,7 @@ fun LoadingContent(
         }
     }
 }
+
+fun <T> Flow<T>.asResult(): Flow<Result<T>> =
+    map { Result.success(it) }
+        .catch { emit(Result.failure(it)) }
