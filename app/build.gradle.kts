@@ -55,6 +55,19 @@ android {
         }
     }
 
+    flavorDimensions += "mode"
+
+    productFlavors {
+        create("demo") {
+            dimension = "mode"
+            applicationIdSuffix = ".demo"
+            versionNameSuffix = "-demo"
+        }
+        create("prod") {
+            dimension = "mode"
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
