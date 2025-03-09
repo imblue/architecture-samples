@@ -26,24 +26,24 @@ class NetworkDataSourceImpl @Inject constructor() : NetworkDataSource {
     // A mutex is used to ensure that reads and writes are thread-safe.
     private val accessMutex = Mutex()
     private var tasks = listOf(
-        NetworkTask(
+        TaskNetwork(
             id = "PISA",
             title = "Build tower in Pisa",
             shortDescription = "Ground looks good, no foundation work required."
         ),
-        NetworkTask(
+        TaskNetwork(
             id = "TACOMA",
             title = "Finish bridge in Tacoma",
             shortDescription = "Found awesome girders at half the cost!"
         )
     )
 
-    override suspend fun loadTasks(): List<NetworkTask> = accessMutex.withLock {
+    override suspend fun loadTasks(): List<TaskNetwork> = accessMutex.withLock {
         delay(SERVICE_LATENCY_IN_MILLIS)
         return tasks
     }
 
-    override suspend fun saveTasks(newTasks: List<NetworkTask>) = accessMutex.withLock {
+    override suspend fun saveTasks(newTasks: List<TaskNetwork>) = accessMutex.withLock {
         delay(SERVICE_LATENCY_IN_MILLIS)
         tasks = newTasks
     }

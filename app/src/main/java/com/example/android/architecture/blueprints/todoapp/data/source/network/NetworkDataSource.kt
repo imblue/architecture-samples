@@ -21,8 +21,6 @@ package com.example.android.architecture.blueprints.todoapp.data.source.network
  *
  */
 interface NetworkDataSource {
-
-    suspend fun loadTasks(): List<NetworkTask>
-
-    suspend fun saveTasks(tasks: List<NetworkTask>)
+    suspend fun loadTasks(): List<TaskNetwork>
+    suspend fun saveTasks(tasks: List<TaskNetwork>)
 }

@@ -43,7 +43,7 @@ abstract class RepositoryModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DataSourceModule {
+abstract class NetworkModule {
 
     @Singleton
     @Binds
@@ -64,6 +64,7 @@ object DatabaseModule {
         ).build()
     }
 
+    @Singleton
     @Provides
     fun provideTaskDao(database: ToDoDatabase): TaskDao = database.taskDao()
 }

@@ -36,7 +36,4 @@ data class Task(
 
     val isActive
         get() = !isCompleted
-
-    val isEmpty
-        get() = title.isEmpty() || description.isEmpty()
 }

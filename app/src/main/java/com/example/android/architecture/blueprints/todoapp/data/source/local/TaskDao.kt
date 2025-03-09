@@ -33,7 +33,7 @@ interface TaskDao {
      * @return all tasks.
      */
     @Query("SELECT * FROM task")
-    fun observeAll(): Flow<List<LocalTask>>
+    fun observeAll(): Flow<List<TaskDB>>
 
     /**
      * Observes a single task.
@@ -42,7 +42,7 @@ interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM task WHERE id = :taskId")
-    fun observeById(taskId: String): Flow<LocalTask>
+    fun observeById(taskId: String): Flow<TaskDB>
 
     /**
      * Select all tasks from the tasks table.
@@ -50,7 +50,7 @@ interface TaskDao {
      * @return all tasks.
      */
     @Query("SELECT * FROM task")
-    suspend fun getAll(): List<LocalTask>
+    suspend fun getAll(): List<TaskDB>
 
     /**
      * Select a task by id.
@@ -59,7 +59,7 @@ interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM task WHERE id = :taskId")
-    suspend fun getById(taskId: String): LocalTask?
+    suspend fun getById(taskId: String): TaskDB?
 
     /**
      * Insert or update a task in the database. If a task already exists, replace it.
@@ -67,7 +67,7 @@ interface TaskDao {
      * @param task the task to be inserted or updated.
      */
     @Upsert
-    suspend fun insertOrReplace(task: LocalTask)
+    suspend fun insertOrReplace(task: TaskDB)
 
     /**
      * Insert or update tasks in the database. If a task already exists, replace it.
@@ -75,7 +75,7 @@ interface TaskDao {
      * @param tasks the tasks to be inserted or updated.
      */
     @Upsert
-    suspend fun insertOrReplaceAll(tasks: List<LocalTask>)
+    suspend fun insertOrReplaceAll(tasks: List<TaskDB>)
 
     /**
      * Update the complete status of a task

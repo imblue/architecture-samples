@@ -23,7 +23,7 @@ package com.example.android.architecture.blueprints.todoapp.data.source.network
  * See mapper.kt for mapping functions used to convert this model to other
  * models.
  */
-data class NetworkTask(
+data class TaskNetwork(
     val id: String,
     val title: String,
     val shortDescription: String,

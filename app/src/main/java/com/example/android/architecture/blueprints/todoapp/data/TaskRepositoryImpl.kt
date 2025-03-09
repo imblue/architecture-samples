@@ -20,6 +20,7 @@ import com.example.android.architecture.blueprints.todoapp.data.source.local.Tas
 import com.example.android.architecture.blueprints.todoapp.data.source.network.NetworkDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -38,6 +39,16 @@ class TaskRepositoryImpl @Inject constructor(
     private val localDataSource: TaskDao,
 ) : TaskRepository {
 
+    override fun getTasksStream(): Flow<List<Task>> {
+        return localDataSource.observeAll()
+            .map { tasks -> tasks.toModelList() }
+    }
+
+    override fun getTaskStream(taskId: String): Flow<Task?> {
+        return localDataSource.observeById(taskId)
+            .map { it.toModel() }
+    }
+
     override suspend fun createTask(title: String, description: String): String {
         val taskId = UUID.randomUUID().toString()
         val task = Task(
@@ -45,7 +56,7 @@ class TaskRepositoryImpl @Inject constructor(
             description = description,
             id = taskId,
         )
-        localDataSource.insertOrReplace(task.toLocal())
+        localDataSource.insertOrReplace(task.toDB())
         saveTasksToNetwork()
         return taskId
     }
@@ -56,22 +67,12 @@ class TaskRepositoryImpl @Inject constructor(
             description = description
         ) ?: throw Exception("Task (id $taskId) not found")
 
-        localDataSource.insertOrReplace(task.toLocal())
+        localDataSource.insertOrReplace(task.toDB())
         saveTasksToNetwork()
-    }
-
-    override fun getTasksStream(): Flow<List<Task>> {
-        return localDataSource.observeAll().map { tasks ->
-            tasks.toExternal()
-        }
     }
 
     override suspend fun refreshTask(taskId: String) {
         refresh()
-    }
-
-    override fun getTaskStream(taskId: String): Flow<Task?> {
-        return localDataSource.observeById(taskId).map { it.toExternal() }
     }
 
     /**
@@ -84,7 +85,7 @@ class TaskRepositoryImpl @Inject constructor(
         if (forceUpdate) {
             refresh()
         }
-        return localDataSource.getById(taskId)?.toExternal()
+        return localDataSource.getById(taskId)?.toModel()
     }
 
     override suspend fun completeTask(taskId: String) {
@@ -128,7 +129,7 @@ class TaskRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             val remoteTasks = networkDataSource.loadTasks()
             localDataSource.deleteAll()
-            localDataSource.insertOrReplaceAll(remoteTasks.toLocal())
+            localDataSource.insertOrReplaceAll(remoteTasks.toDBList())
         }
     }
 
@@ -141,15 +142,10 @@ class TaskRepositoryImpl @Inject constructor(
      * they are aware that their data isn't being backed up.
      */
     private suspend fun saveTasksToNetwork() {
-        try {
-            val localTasks = localDataSource.getAll()
-            withContext(Dispatchers.IO) {
-                val networkTasks = localTasks.toNetwork()
-                networkDataSource.saveTasks(networkTasks)
-            }
-        } catch (e: Exception) {
-            // In a real app you'd handle the exception e.g. by exposing a `networkStatus` flow
-            // to an app level UI state holder which could then display a Toast message.
+        val localTasks = localDataSource.observeAll().first()
+        withContext(Dispatchers.IO) {
+            val networkTasks = localTasks.toNetworkList()
+            networkDataSource.saveTasks(networkTasks)
         }
     }
 }

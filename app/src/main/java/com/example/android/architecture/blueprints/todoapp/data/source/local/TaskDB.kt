@@ -29,7 +29,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "task"
 )
-data class LocalTask(
+data class TaskDB(
     @PrimaryKey val id: String,
     var title: String,
     var description: String,

@@ -2,18 +2,17 @@
 accompanist = "0.36.0"
 annotation = "1.9.1"
 androidGradlePlugin = "8.7.3"
-androidxActivity = "1.9.3"
-androidxComposeBom = "2024.12.01"
+androidxActivity = "1.10.1"
+androidxComposeBom = "2025.02.00"
 androidxHiltNavigationCompose = "1.2.0"
 androidxLifecycle = "2.8.7"
-androidxNavigation = "2.8.5"
+androidxNavigation = "2.8.8"
 # @keep
 compileSdk = "35"
 hilt = "2.53.1"
 kotlin = "2.1.10"
 kotlinxCoroutines = "1.10.1"
 ksp = "2.1.10-1.0.30"
-lint = "31.7.3"
 # @keep
 minSdk = "30"
 room = "2.6.1"
@@ -39,10 +38,8 @@ androidx-lifecycle-runtimeCompose = { group = "androidx.lifecycle", name = "life
 androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 hilt-android-core = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
