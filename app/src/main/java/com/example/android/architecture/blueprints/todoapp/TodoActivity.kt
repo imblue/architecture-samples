@@ -21,7 +21,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.android.architecture.blueprints.todoapp.ui.TodoNavGraph
-import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
+import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -33,8 +33,9 @@ class TodoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            TodoTheme {
+            AppTheme {
                 TodoNavGraph()
             }
         }

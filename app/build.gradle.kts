@@ -20,6 +20,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
@@ -117,6 +118,9 @@ dependencies {
     implementation(libs.hilt.android.core)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
+
+    // Kotlin Serialization
+    implementation(libs.kotlinx.serialization.core)
 
     // Jetpack Compose
     val composeBom = platform(libs.androidx.compose.bom)

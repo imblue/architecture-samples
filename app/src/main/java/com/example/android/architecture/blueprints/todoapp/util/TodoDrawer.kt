@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,14 +48,14 @@ import androidx.compose.ui.unit.dp
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinations
 import com.example.android.architecture.blueprints.todoapp.ui.TodoNavigationActions
-import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
+import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun AppModalDrawer(
     drawerState: DrawerState,
-    currentRoute: String,
+    currentRoute: TodoDestinations,
     navigationActions: TodoNavigationActions,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     content: @Composable () -> Unit
@@ -78,7 +77,7 @@ fun AppModalDrawer(
 
 @Composable
 private fun AppDrawer(
-    currentRoute: String,
+    currentRoute: TodoDestinations,
     navigateToTasks: () -> Unit,
     navigateToStatistics: () -> Unit,
     closeDrawer: () -> Unit,
@@ -90,7 +89,7 @@ private fun AppDrawer(
             DrawerButton(
                 painter = painterResource(id = R.drawable.ic_list),
                 label = stringResource(id = R.string.list_title),
-                isSelected = currentRoute == TodoDestinations.TASKS_ROUTE,
+                isSelected = currentRoute is TodoDestinations.TaskList,
                 action = {
                     navigateToTasks()
                     closeDrawer()
@@ -99,7 +98,7 @@ private fun AppDrawer(
             DrawerButton(
                 painter = painterResource(id = R.drawable.ic_statistics),
                 label = stringResource(id = R.string.statistics_title),
-                isSelected = currentRoute == TodoDestinations.STATISTICS_ROUTE,
+                isSelected = currentRoute is TodoDestinations.Statistics,
                 action = {
                     navigateToStatistics()
                     closeDrawer()
@@ -179,10 +178,10 @@ private fun DrawerButton(
 @Preview("Drawer contents")
 @Composable
 fun PreviewAppDrawer() {
-    TodoTheme {
+    AppTheme {
         Surface {
             AppDrawer(
-                currentRoute = TodoDestinations.TASKS_ROUTE,
+                currentRoute = TodoDestinations.TaskList(),
                 navigateToTasks = {},
                 navigateToStatistics = {},
                 closeDrawer = {}

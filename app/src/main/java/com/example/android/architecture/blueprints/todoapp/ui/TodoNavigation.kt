@@ -16,36 +16,34 @@
 
 package com.example.android.architecture.blueprints.todoapp.ui
 
+import androidx.annotation.StringRes
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import kotlinx.serialization.Serializable
 
 /**
- * Screens used in [TodoDestinations]
+ * Destinations used in the nav graph.
  */
-private object TodoScreens {
-    const val TASKS_SCREEN = "tasks"
-    const val STATISTICS_SCREEN = "statistics"
-    const val TASK_DETAIL_SCREEN = "task"
-    const val ADD_EDIT_TASK_SCREEN = "addEditTask"
-}
+sealed class TodoDestinations {
 
-/**
- * Arguments used in [TodoDestinations] routes
- */
-object TodoDestinationsArgs {
-    const val USER_MESSAGE_ARG = "userMessage"
-    const val TASK_ID_ARG = "taskId"
-    const val TITLE_ARG = "title"
-}
+    @Serializable
+    data class TaskList(
+        @StringRes val userMessage: Int? = null
+    ) : TodoDestinations()
 
-/**
- * Destinations used in the [com.example.android.architecture.blueprints.todoapp.TodoActivity]
- */
-object TodoDestinations {
-    const val TASKS_ROUTE = "${TodoScreens.TASKS_SCREEN}?${TodoDestinationsArgs.USER_MESSAGE_ARG}={${TodoDestinationsArgs.USER_MESSAGE_ARG}}"
-    const val STATISTICS_ROUTE = TodoScreens.STATISTICS_SCREEN
-    const val TASK_DETAIL_ROUTE = "${TodoScreens.TASK_DETAIL_SCREEN}/{${TodoDestinationsArgs.TASK_ID_ARG}}"
-    const val ADD_EDIT_TASK_ROUTE = "${TodoScreens.ADD_EDIT_TASK_SCREEN}/{${TodoDestinationsArgs.TITLE_ARG}}?${TodoDestinationsArgs.TASK_ID_ARG}={${TodoDestinationsArgs.TASK_ID_ARG}}"
+    @Serializable
+    data object Statistics : TodoDestinations()
+
+    @Serializable
+    data class TaskDetail(
+        val id: String
+    ) : TodoDestinations()
+
+    @Serializable
+    data class AddEditTask(
+        @StringRes val title: Int,
+        val taskId: String?
+    ) : TodoDestinations()
 }
 
 /**
@@ -53,13 +51,10 @@ object TodoDestinations {
  */
 class TodoNavigationActions(private val navController: NavHostController) {
 
-    fun navigateToTasks(userMessage: Int = 0) {
-        val navigatesFromDrawer = userMessage == 0
-        navController.navigate(
-            TodoScreens.TASKS_SCREEN.let {
-                if (userMessage != 0) "$it?${TodoDestinationsArgs.USER_MESSAGE_ARG}=$userMessage" else it
-            }
-        ) {
+    fun navigateToTasks(userMessage: Int? = null) {
+        val navigatesFromDrawer = userMessage == null
+
+        navController.navigate(TodoDestinations.TaskList(userMessage)) {
             popUpTo(navController.graph.findStartDestination().id) {
                 inclusive = !navigatesFromDrawer
                 saveState = navigatesFromDrawer
@@ -70,7 +65,7 @@ class TodoNavigationActions(private val navController: NavHostController) {
     }
 
     fun navigateToStatistics() {
-        navController.navigate(TodoDestinations.STATISTICS_ROUTE) {
+        navController.navigate(TodoDestinations.Statistics) {
             // Pop up to the start destination of the graph to
             // avoid building up a large stack of destinations
             // on the back stack as users select items
@@ -86,14 +81,10 @@ class TodoNavigationActions(private val navController: NavHostController) {
     }
 
     fun navigateToTaskDetail(taskId: String) {
-        navController.navigate("${TodoScreens.TASK_DETAIL_SCREEN}/$taskId")
+        navController.navigate(TodoDestinations.TaskDetail(taskId))
     }
 
     fun navigateToAddEditTask(title: Int, taskId: String?) {
-        navController.navigate(
-            "${TodoScreens.ADD_EDIT_TASK_SCREEN}/$title".let {
-                if (taskId != null) "$it?${TodoDestinationsArgs.TASK_ID_ARG}=$taskId" else it
-            }
-        )
+        navController.navigate(TodoDestinations.AddEditTask(title, taskId))
     }
 }

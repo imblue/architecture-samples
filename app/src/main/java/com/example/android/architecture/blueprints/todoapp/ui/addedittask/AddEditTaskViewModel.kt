@@ -19,9 +19,10 @@ package com.example.android.architecture.blueprints.todoapp.ui.addedittask
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinationsArgs
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
+import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +52,8 @@ class AddEditTaskViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val taskId: String? = savedStateHandle[TodoDestinationsArgs.TASK_ID_ARG]
+    private val route: TodoDestinations.AddEditTask = savedStateHandle.toRoute()
+    private val taskId: String? = route.taskId
 
     // A MutableStateFlow needs to be created in this ViewModel. The source of truth of the current
     // editable Task is the ViewModel, we need to mutate the UI state directly in methods such as

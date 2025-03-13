@@ -47,7 +47,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -59,8 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ACTIVE_TASKS
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.COMPLETED_TASKS
@@ -69,10 +68,9 @@ import com.example.android.architecture.blueprints.todoapp.util.TasksTopAppBar
 
 @Composable
 fun TasksScreen(
-    @StringRes userMessage: Int,
+    @StringRes userMessage: Int?,
     onAddTask: () -> Unit,
     onTaskClick: (Task) -> Unit,
-    onUserMessageDisplayed: () -> Unit,
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TasksViewModel = hiltViewModel(),
@@ -121,11 +119,9 @@ fun TasksScreen(
         }
 
         // Check if there's a userMessage to show to the user
-        val currentOnUserMessageDisplayed by rememberUpdatedState(onUserMessageDisplayed)
         LaunchedEffect(userMessage) {
-            if (userMessage != 0) {
+            if (userMessage != null) {
                 viewModel.showEditResultMessage(userMessage)
-                currentOnUserMessageDisplayed()
             }
         }
     }
@@ -303,7 +299,7 @@ private fun TasksContentEmptyPreview() {
 @Preview
 @Composable
 private fun TasksEmptyContentPreview() {
-    TodoTheme {
+    AppTheme {
         Surface {
             TasksEmptyContent(
                 noTasksLabel = R.string.no_tasks_all,

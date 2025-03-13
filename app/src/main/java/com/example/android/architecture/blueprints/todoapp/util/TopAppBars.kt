@@ -48,7 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.ui.TodoTheme
+import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
 
 @Composable
 fun TasksTopAppBar(
@@ -191,7 +191,7 @@ fun AddEditTaskTopAppBar(@StringRes title: Int, onBack: () -> Unit) {
 @Preview
 @Composable
 private fun TasksTopAppBarPreview() {
-    TodoTheme {
+    AppTheme {
         Surface {
             TasksTopAppBar({}, {}, {}, {}, {}, {})
         }
@@ -201,7 +201,7 @@ private fun TasksTopAppBarPreview() {
 @Preview
 @Composable
 private fun StatisticsTopAppBarPreview() {
-    TodoTheme {
+    AppTheme {
         Surface {
             StatisticsTopAppBar { }
         }
@@ -211,7 +211,7 @@ private fun StatisticsTopAppBarPreview() {
 @Preview
 @Composable
 private fun TaskDetailTopAppBarPreview() {
-    TodoTheme {
+    AppTheme {
         Surface {
             TaskDetailTopAppBar({ }, { })
         }
@@ -221,7 +221,7 @@ private fun TaskDetailTopAppBarPreview() {
 @Preview
 @Composable
 private fun AddEditTaskTopAppBarPreview() {
-    TodoTheme {
+    AppTheme {
         Surface {
             AddEditTaskTopAppBar(R.string.add_task) { }
         }

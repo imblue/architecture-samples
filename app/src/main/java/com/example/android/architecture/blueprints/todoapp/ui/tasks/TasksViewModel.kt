@@ -16,12 +16,10 @@
 
 package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.android.architecture.blueprints.todoapp.ui.ADD_EDIT_RESULT_OK
-import com.example.android.architecture.blueprints.todoapp.ui.DELETE_RESULT_OK
-import com.example.android.architecture.blueprints.todoapp.ui.EDIT_RESULT_OK
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
@@ -125,12 +123,8 @@ class TasksViewModel @Inject constructor(
         _isLoading.value = false
     }
 
-    fun showEditResultMessage(result: Int) {
-        when (result) {
-            EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_saved_task_message)
-            ADD_EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_added_task_message)
-            DELETE_RESULT_OK -> showSnackbarMessage(R.string.successfully_deleted_task_message)
-        }
+    fun showEditResultMessage(@StringRes result: Int) {
+        showSnackbarMessage(result)
     }
 
     fun snackbarMessageShown() {
