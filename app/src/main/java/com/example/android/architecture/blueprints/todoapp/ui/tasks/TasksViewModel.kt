@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -87,6 +88,12 @@ class TasksViewModel @Inject constructor(
     init {
         route.userMessage?.let { showSnackbarMessage(it) }
         refresh()
+
+        viewModelScope.launch {
+            while(true) {
+                taskRepository.createTask(UUID.randomUUID().toString(), "description")
+            }
+        }
     }
 
     fun setFiltering(requestType: TasksFilterType) {

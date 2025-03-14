@@ -140,11 +140,13 @@ private fun TasksContent(
         ) {
             stickyHeader("header") {
                 AnimatedContent(currentFilteringLabel) { label ->
-                    Text(
-                        text = stringResource(label),
-                        modifier = Modifier.padding(all = 16.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Surface(Modifier.fillMaxWidth()) {
+                        Text(
+                            text = stringResource(label),
+                            modifier = Modifier.padding(all = 16.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
                 }
             }
 
