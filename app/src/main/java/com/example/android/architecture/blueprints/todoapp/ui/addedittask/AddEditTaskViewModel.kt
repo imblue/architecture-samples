@@ -101,50 +101,74 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    private fun createNewTask() = viewModelScope.launch {
-        taskRepository.createTask(uiState.value.title, uiState.value.description)
-        _uiState.update {
-            it.copy(isTaskSaved = true)
+    private fun createNewTask() {
+        _uiState.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            runCatching {
+                taskRepository.createTask(
+                    title = uiState.value.title,
+                    description = uiState.value.description
+                )
+            }
+                .onSuccess { _uiState.update { it.copy(isTaskSaved = true) } }
+                .onFailure { _uiState.update { it.copy(isLoading = false, userMessage = R.string.saving_task_error) } }
         }
     }
 
     private fun updateTask() {
+        _uiState.update { it.copy(isLoading = true) }
+
         if (taskId == null) {
-            throw RuntimeException("updateTask() was called but task is new.")
+            _uiState.update { it.copy(isLoading = false, userMessage = R.string.saving_task_error) }
+            return
         }
+
         viewModelScope.launch {
-            taskRepository.updateTask(
-                taskId,
-                title = uiState.value.title,
-                description = uiState.value.description,
-            )
-            _uiState.update {
-                it.copy(isTaskSaved = true)
+            runCatching {
+                taskRepository.updateTask(
+                    taskId = taskId,
+                    title = uiState.value.title,
+                    description = uiState.value.description,
+                )
             }
+                .onSuccess { _uiState.update { it.copy(isTaskSaved = true) } }
+                .onFailure { _uiState.update { it.copy(isLoading = false, userMessage = R.string.saving_task_error) } }
         }
     }
 
     private fun loadTask(taskId: String) {
-        _uiState.update {
-            it.copy(isLoading = true)
-        }
+        _uiState.update { it.copy(isLoading = true) }
+
         viewModelScope.launch {
-            taskRepository.getTask(taskId).let { task ->
-                if (task != null) {
-                    _uiState.update {
-                        it.copy(
-                            title = task.title,
-                            description = task.description,
-                            isTaskCompleted = task.isCompleted,
-                            isLoading = false
-                        )
-                    }
-                } else {
-                    _uiState.update {
-                        it.copy(isLoading = false)
+            runCatching { taskRepository.getTask(taskId) }
+                .onSuccess { task ->
+                    if (task != null) {
+                        _uiState.update {
+                            it.copy(
+                                title = task.title,
+                                description = task.description,
+                                isTaskCompleted = task.isCompleted,
+                                isLoading = false
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                userMessage = R.string.loading_task_error
+                            )
+                        }
                     }
                 }
-            }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            userMessage = R.string.loading_task_error
+                        )
+                    }
+                }
         }
     }
 }

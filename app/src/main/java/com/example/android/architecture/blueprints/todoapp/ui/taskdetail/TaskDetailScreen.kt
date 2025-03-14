@@ -21,33 +21,36 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.util.LoadingContent
-import com.example.android.architecture.blueprints.todoapp.util.TaskDetailTopAppBar
+import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
 
 @Composable
 fun TaskDetailScreen(
@@ -64,7 +67,7 @@ fun TaskDetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { TaskDetailTopAppBar(onBack = onBack, onDelete = viewModel::deleteTask) },
         floatingActionButton = {
-            SmallFloatingActionButton(onClick = { onEditTask(viewModel.taskId) }) {
+            FloatingActionButton(onClick = { onEditTask(viewModel.taskId) }) {
                 Icon(Icons.Filled.Edit, stringResource(id = R.string.edit_task))
             }
         }
@@ -73,19 +76,26 @@ fun TaskDetailScreen(
 
         EditTaskContent(
             loading = uiState.isLoading,
-            empty = uiState.task == null && !uiState.isLoading,
             task = uiState.task,
-            onRefresh = viewModel::refresh,
             onTaskCheck = viewModel::setCompleted,
             modifier = Modifier.padding(paddingValues)
         )
 
         // Check for user messages to display on the screen
         uiState.userMessage?.let { userMessage ->
+            if (uiState.isTaskDeleted) {
+                return@let
+            }
+
             val snackbarText = stringResource(userMessage)
             LaunchedEffect(snackbarHostState, viewModel, userMessage, snackbarText) {
-                snackbarHostState.showSnackbar(snackbarText)
+                snackbarHostState.showSnackbar(
+                    message = snackbarText,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Indefinite
+                )
                 viewModel.snackbarMessageShown()
+                onBack()
             }
         }
 
@@ -101,48 +111,50 @@ fun TaskDetailScreen(
 @Composable
 private fun EditTaskContent(
     loading: Boolean,
-    empty: Boolean,
     task: Task?,
     onTaskCheck: (Boolean) -> Unit,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val screenPadding = Modifier.padding(
-        horizontal = dimensionResource(id = R.dimen.horizontal_margin),
-        vertical = dimensionResource(id = R.dimen.vertical_margin),
-    )
-    val commonModifier = modifier
-        .fillMaxWidth()
-        .then(screenPadding)
+    if (loading) {
+        LinearProgressIndicator(
+            modifier = modifier.fillMaxWidth()
+        )
+    }
 
-    LoadingContent(
-        loading = loading,
-        empty = empty,
-        emptyContent = {
-            Text(
-                text = stringResource(id = R.string.no_data),
-                modifier = commonModifier
-            )
-        },
-        onRefresh = onRefresh
-    ) {
-        Column(commonModifier.verticalScroll(rememberScrollState())) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .then(screenPadding),
+    if (task != null) {
+        Row(
+            modifier
+                .fillMaxWidth()
+                .padding(all = 16.dp),
 
             ) {
-                if (task != null) {
-                    Checkbox(task.isCompleted, onTaskCheck)
-                    Column {
-                        Text(text = task.title, style = MaterialTheme.typography.headlineSmall)
-                        Text(text = task.description, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
+            Checkbox(task.isCompleted, onTaskCheck)
+            Column {
+                Text(text = task.title, style = MaterialTheme.typography.headlineSmall)
+                Text(text = task.description, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
+}
+
+@Composable
+fun TaskDetailTopAppBar(onBack: () -> Unit, onDelete: () -> Unit) {
+    TopAppBar(
+        title = {
+            Text(text = stringResource(id = R.string.task_details))
+        },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Filled.ArrowBack, stringResource(id = R.string.menu_back))
+            }
+        },
+        actions = {
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Filled.Delete, stringResource(id = R.string.menu_delete_task))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Preview
@@ -151,15 +163,13 @@ private fun EditTaskContentPreview() {
     Surface {
         EditTaskContent(
             loading = false,
-            empty = false,
             Task(
                 title = "Title",
                 description = "Description",
                 isCompleted = false,
                 id = "ID"
             ),
-            onTaskCheck = { },
-            onRefresh = { }
+            onTaskCheck = { }
         )
     }
 
@@ -171,15 +181,13 @@ private fun EditTaskContentTaskCompletedPreview() {
     Surface {
         EditTaskContent(
             loading = false,
-            empty = false,
             Task(
                 title = "Title",
                 description = "Description",
                 isCompleted = false,
                 id = "ID"
             ),
-            onTaskCheck = { },
-            onRefresh = { }
+            onTaskCheck = { }
         )
     }
 }
@@ -190,15 +198,23 @@ private fun EditTaskContentEmptyPreview() {
     Surface {
         EditTaskContent(
             loading = false,
-            empty = true,
             Task(
                 title = "Title",
                 description = "Description",
                 isCompleted = false,
                 id = "ID"
             ),
-            onTaskCheck = { },
-            onRefresh = { }
+            onTaskCheck = { }
         )
+    }
+}
+
+@Preview
+@Composable
+private fun TaskDetailTopAppBarPreview() {
+    AppTheme {
+        Surface {
+            TaskDetailTopAppBar({ }, { })
+        }
     }
 }

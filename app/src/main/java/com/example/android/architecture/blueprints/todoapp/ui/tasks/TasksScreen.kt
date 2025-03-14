@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,21 +33,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
@@ -60,38 +58,30 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
-import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ACTIVE_TASKS
-import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.ALL_TASKS
-import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksFilterType.COMPLETED_TASKS
-import com.example.android.architecture.blueprints.todoapp.util.LoadingContent
-import com.example.android.architecture.blueprints.todoapp.util.TasksTopAppBar
 
 @Composable
 fun TasksScreen(
-    @StringRes userMessage: Int?,
     onAddTask: () -> Unit,
     onTaskClick: (Task) -> Unit,
     openDrawer: () -> Unit,
-    modifier: Modifier = Modifier,
     viewModel: TasksViewModel = hiltViewModel(),
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TasksTopAppBar(
                 openDrawer = openDrawer,
-                onFilterAllTasks = { viewModel.setFiltering(ALL_TASKS) },
-                onFilterActiveTasks = { viewModel.setFiltering(ACTIVE_TASKS) },
-                onFilterCompletedTasks = { viewModel.setFiltering(COMPLETED_TASKS) },
+                onFilterSelected = { viewModel.setFiltering(it) },
                 onClearCompletedTasks = { viewModel.clearCompletedTasks() },
                 onRefresh = { viewModel.refresh() }
             )
         },
         floatingActionButton = {
-            SmallFloatingActionButton(onClick = onAddTask) {
-                Icon(Icons.Filled.Add, stringResource(id = R.string.add_task))
+            FloatingActionButton(onClick = onAddTask) {
+                Icon(Icons.Filled.Add, stringResource(R.string.add_task))
             }
         }
     ) { paddingValues ->
@@ -100,9 +90,9 @@ fun TasksScreen(
         TasksContent(
             loading = uiState.isLoading,
             tasks = uiState.items,
-            currentFilteringLabel = uiState.filteringUiInfo.currentFilteringLabel,
-            noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
-            noTasksIconRes = uiState.filteringUiInfo.noTaskIconRes,
+            currentFilteringLabel = uiState.selectedFilter.title,
+            noTasksLabel = uiState.selectedFilter.emptyLabel,
+            noTasksIconRes = uiState.selectedFilter.emptyIcon,
             onRefresh = viewModel::refresh,
             onTaskClick = onTaskClick,
             onTaskCheckedChange = viewModel::completeTask,
@@ -112,16 +102,10 @@ fun TasksScreen(
         // Check for user messages to display on the screen
         uiState.userMessage?.let { message ->
             val snackbarText = stringResource(message)
-            LaunchedEffect(snackbarHostState, viewModel, message, snackbarText) {
-                snackbarHostState.showSnackbar(snackbarText)
-                viewModel.snackbarMessageShown()
-            }
-        }
 
-        // Check if there's a userMessage to show to the user
-        LaunchedEffect(userMessage) {
-            if (userMessage != null) {
-                viewModel.showEditResultMessage(userMessage)
+            LaunchedEffect(snackbarText) {
+                snackbarHostState.showSnackbar(snackbarText)
+                viewModel.resetUserMessage()
             }
         }
     }
@@ -139,30 +123,37 @@ private fun TasksContent(
     onTaskCheckedChange: (Task, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LoadingContent(
-        loading = loading,
-        empty = tasks.isEmpty(),
-        emptyContent = { TasksEmptyContent(noTasksLabel, noTasksIconRes, modifier) },
-        onRefresh = onRefresh
+    PullToRefreshBox(
+        loading,
+        onRefresh,
+        modifier
     ) {
         LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = dimensionResource(id = R.dimen.horizontal_margin))
+            modifier = Modifier.fillMaxSize()
         ) {
             stickyHeader("header") {
-                Text(
-                    text = stringResource(currentFilteringLabel),
-                    modifier = Modifier.padding(
-                        horizontal = dimensionResource(id = R.dimen.list_item_padding),
-                        vertical = dimensionResource(id = R.dimen.vertical_margin)
-                    ),
-                    style = MaterialTheme.typography.headlineSmall
-                )
+                AnimatedContent(currentFilteringLabel) { label ->
+                    Text(
+                        text = stringResource(label),
+                        modifier = Modifier.padding(all = 16.dp),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
             }
 
-            items(tasks, { it.id }) { task ->
+            if (tasks.isEmpty()) {
+                item("key_empty") {
+                    TasksEmptyContent(
+                        modifier = Modifier.animateItem(),
+                        label = noTasksLabel,
+                        icon = noTasksIconRes
+                    )
+                }
+            }
+
+            items(tasks, { "task_${it.id}" }) { task ->
                 TaskItem(
+                    modifier = Modifier.animateItem(),
                     task = task,
                     onTaskClick = onTaskClick,
                     onCheckedChange = { onTaskCheckedChange(task, it) }
@@ -174,19 +165,17 @@ private fun TasksContent(
 
 @Composable
 private fun TaskItem(
+    modifier: Modifier = Modifier,
     task: Task,
     onCheckedChange: (Boolean) -> Unit,
     onTaskClick: (Task) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = dimensionResource(id = R.dimen.horizontal_margin),
-                vertical = dimensionResource(id = R.dimen.list_item_padding),
-            )
             .clickable { onTaskClick(task) }
+            .padding(all = 16.dp)
     ) {
         Checkbox(
             checked = task.isCompleted,
@@ -196,7 +185,7 @@ private fun TaskItem(
             text = task.titleForList,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(
-                start = dimensionResource(id = R.dimen.horizontal_margin)
+                start = 16.dp
             ),
             textDecoration = if (task.isCompleted) {
                 TextDecoration.LineThrough
@@ -209,21 +198,22 @@ private fun TaskItem(
 
 @Composable
 private fun TasksEmptyContent(
-    @StringRes noTasksLabel: Int,
-    @DrawableRes noTasksIconRes: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    @StringRes label: Int,
+    @DrawableRes icon: Int
 ) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = noTasksIconRes),
-            contentDescription = stringResource(R.string.no_tasks_image_content_description),
-            modifier = Modifier.size(96.dp)
-        )
-        Text(stringResource(id = noTasksLabel))
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = icon),
+                contentDescription = stringResource(R.string.no_tasks_image_content_description),
+                modifier = Modifier.size(96.dp)
+            )
+            Text(stringResource(id = label))
+        }
     }
 }
 
@@ -302,8 +292,8 @@ private fun TasksEmptyContentPreview() {
     AppTheme {
         Surface {
             TasksEmptyContent(
-                noTasksLabel = R.string.no_tasks_all,
-                noTasksIconRes = R.drawable.logo_no_fill
+                label = R.string.no_tasks_all,
+                icon = R.drawable.logo_no_fill
             )
         }
     }

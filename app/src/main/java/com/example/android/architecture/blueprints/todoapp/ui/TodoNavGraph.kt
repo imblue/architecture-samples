@@ -58,7 +58,6 @@ fun TodoNavGraph(
             val route: TodoDestinations.TaskList = entry.toRoute()
             AppModalDrawer(drawerState, route, navActions) {
                 TasksScreen(
-                    userMessage = route.userMessage,
                     onAddTask = { navActions.navigateToAddEditTask(R.string.add_task, null) },
                     onTaskClick = { task -> navActions.navigateToTaskDetail(task.id) },
                     openDrawer = { scope.launch { drawerState.open() } }
@@ -76,7 +75,7 @@ fun TodoNavGraph(
             val route: TodoDestinations.AddEditTask = entry.toRoute()
             AddEditTaskScreen(
                 topBarTitle = route.title,
-                onTaskUpdate = {
+                onFinish = {
                     navActions.navigateToTasks(
                         if (route.taskId == null) {
                             R.string.successfully_added_task_message

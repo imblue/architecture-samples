@@ -14,70 +14,70 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.android.architecture.blueprints.todoapp.ui.addedittask
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.util.AddEditTaskTopAppBar
+import com.example.android.architecture.blueprints.todoapp.ui.AppTheme
 
 @Composable
 fun AddEditTaskScreen(
     @StringRes topBarTitle: Int,
-    onTaskUpdate: () -> Unit,
+    onFinish: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier,
     viewModel: AddEditTaskViewModel = hiltViewModel(),
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { AddEditTaskTopAppBar(topBarTitle, onBack) },
         floatingActionButton = {
-            SmallFloatingActionButton(onClick = viewModel::saveTask) {
-                Icon(Icons.Filled.Done, stringResource(id = R.string.cd_save_task))
+            if (!uiState.isLoading) {
+                FloatingActionButton(onClick = viewModel::saveTask) {
+                    Icon(Icons.Filled.Done, stringResource(id = R.string.cd_save_task))
+                }
             }
         }
     ) { paddingValues ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
         AddEditTaskContent(
             loading = uiState.isLoading,
             title = uiState.title,
@@ -90,7 +90,7 @@ fun AddEditTaskScreen(
         // Check if the task is saved and call onTaskUpdate event
         LaunchedEffect(uiState.isTaskSaved) {
             if (uiState.isTaskSaved) {
-                onTaskUpdate()
+                onFinish()
             }
         }
 
@@ -106,6 +106,35 @@ fun AddEditTaskScreen(
 }
 
 @Composable
+private fun AddEditTaskTopAppBar(@StringRes title: Int, onBack: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = { Text(text = stringResource(title)) },
+        navigationIcon = {
+            IconButton(onClick = { showDialog = true }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back))
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } },
+            confirmButton = {
+                TextButton(onClick = {
+                    onBack()
+                    showDialog = false
+                }) { Text("Confirm") }
+            },
+            title = { Text("Discard changes?") }
+        )
+    }
+}
+
+@Composable
 private fun AddEditTaskContent(
     loading: Boolean,
     title: String,
@@ -114,51 +143,43 @@ private fun AddEditTaskContent(
     onDescriptionChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isRefreshing by remember { mutableStateOf(false) }
-    val refreshingState = rememberPullToRefreshState()
     if (loading) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            state = refreshingState,
-            onRefresh = { /* DO NOTHING */ },
-            content = { }
-        )
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
     } else {
         Column(
             modifier
                 .fillMaxWidth()
-                .padding(all = dimensionResource(id = R.dimen.horizontal_margin))
-                .verticalScroll(rememberScrollState())
+                .padding(all = 16.dp)
         ) {
-            val textFieldColors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.onSecondary
-            )
             OutlinedTextField(
                 value = title,
-                modifier = Modifier.fillMaxWidth(),
                 onValueChange = onTitleChanged,
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.title_hint),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                },
-                textStyle = MaterialTheme.typography.headlineSmall
-                    .copy(fontWeight = FontWeight.Bold),
-                maxLines = 1,
-                colors = textFieldColors
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(id = R.string.title_hint)) }
             )
+
+            Spacer(Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChanged,
                 placeholder = { Text(stringResource(id = R.string.description_hint)) },
-                modifier = Modifier
-                    .height(350.dp)
-                    .fillMaxWidth(),
-                colors = textFieldColors
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 4,
+                maxLines = 4
             )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun AddEditTaskTopAppBarPreview() {
+    AppTheme {
+        Surface {
+            AddEditTaskTopAppBar(R.string.add_task) { }
         }
     }
 }

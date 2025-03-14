@@ -24,12 +24,12 @@ import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.TaskRepository
 import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinations
-import com.example.android.architecture.blueprints.todoapp.util.asResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -68,25 +68,16 @@ class TaskDetailViewModel @Inject constructor(
                 _userMessage.value = R.string.task_not_found
             }
         }
-        .asResult()
 
     val uiState: StateFlow<TaskDetailUiState> = combine(
         _userMessage, _isLoading, _isTaskDeleted, _taskAsync
     ) { userMessage, isLoading, isTaskDeleted, taskAsync ->
-        if (taskAsync.isSuccess) {
-            TaskDetailUiState(
-                task = taskAsync.getOrNull(),
-                isLoading = isLoading,
-                userMessage = userMessage,
-                isTaskDeleted = isTaskDeleted
-            )
-        } else {
-            TaskDetailUiState(
-                isLoading = isLoading,
-                userMessage = R.string.loading_task_error,
-                isTaskDeleted = isTaskDeleted
-            )
-        }
+        TaskDetailUiState(
+            task = taskAsync,
+            isLoading = isLoading,
+            userMessage = userMessage,
+            isTaskDeleted = isTaskDeleted
+        )
     }
         .stateIn(
             scope = viewModelScope,
@@ -95,14 +86,19 @@ class TaskDetailViewModel @Inject constructor(
         )
 
     fun deleteTask() = viewModelScope.launch {
+        _isLoading.value = true
         runCatching { taskRepository.deleteTask(taskId) }
             .onSuccess { _isTaskDeleted.value = true }
-            .onFailure { Timber.e(it) }
+            .onFailure {
+                Timber.e(it)
+                _userMessage.value = R.string.saving_task_error
+            }
     }
 
     fun setCompleted(completed: Boolean) = viewModelScope.launch {
         val task = uiState.value.task ?: return@launch
 
+        _isLoading.value = true
         if (completed) {
             runCatching { taskRepository.completeTask(task.id) }
                 .onSuccess { showSnackbarMessage(R.string.task_marked_complete) }
@@ -112,14 +108,7 @@ class TaskDetailViewModel @Inject constructor(
                 .onSuccess { showSnackbarMessage(R.string.task_marked_active) }
                 .onFailure { Timber.e(it) }
         }
-    }
-
-    fun refresh() {
-        _isLoading.value = true
-        viewModelScope.launch {
-            taskRepository.refreshTask(taskId)
-            _isLoading.value = false
-        }
+        _isLoading.value = false
     }
 
     fun snackbarMessageShown() {

@@ -42,7 +42,7 @@ interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM task WHERE id = :taskId")
-    fun observeById(taskId: String): Flow<TaskDB>
+    fun observeById(taskId: String): Flow<TaskDB?>
 
     /**
      * Select all tasks from the tasks table.

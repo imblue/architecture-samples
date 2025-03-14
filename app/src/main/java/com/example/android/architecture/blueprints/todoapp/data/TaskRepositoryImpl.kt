@@ -19,6 +19,7 @@ package com.example.android.architecture.blueprints.todoapp.data
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TaskDao
 import com.example.android.architecture.blueprints.todoapp.data.source.network.NetworkDataSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -46,7 +47,7 @@ class TaskRepositoryImpl @Inject constructor(
 
     override fun getTaskStream(taskId: String): Flow<Task?> {
         return localDataSource.observeById(taskId)
-            .map { it.toModel() }
+            .map { it?.toModel() }
     }
 
     override suspend fun createTask(title: String, description: String): String {

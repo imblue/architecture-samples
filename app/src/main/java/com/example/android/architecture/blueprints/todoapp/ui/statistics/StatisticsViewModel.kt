@@ -67,8 +67,9 @@ class StatisticsViewModel @Inject constructor(
                 initialValue = StatisticsUiState(isLoading = true)
             )
 
-    fun refresh() {
+    init {
         _isLoading.value = true
+
         viewModelScope.launch {
             runCatching { taskRepository.refresh() }
                 .onFailure { _error.value = it }

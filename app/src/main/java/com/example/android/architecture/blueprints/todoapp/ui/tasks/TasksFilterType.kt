@@ -16,22 +16,42 @@
 
 package com.example.android.architecture.blueprints.todoapp.ui.tasks
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import com.example.android.architecture.blueprints.todoapp.R
+
 /**
  * Used with the filter spinner in the tasks list.
  */
-enum class TasksFilterType {
+enum class TasksFilterType(
+    @StringRes val title: Int,
+    @StringRes val emptyLabel: Int,
+    @DrawableRes val emptyIcon: Int
+) {
     /**
      * Do not filter tasks.
      */
-    ALL_TASKS,
+    ALL_TASKS(
+        R.string.label_all,
+        R.string.no_tasks_all,
+        R.drawable.logo_no_fill
+    ),
 
     /**
      * Filters only the active (not completed yet) tasks.
      */
-    ACTIVE_TASKS,
+    ACTIVE_TASKS(
+        R.string.label_active,
+        R.string.no_tasks_active,
+        R.drawable.ic_check_circle_96dp
+    ),
 
     /**
      * Filters only the completed tasks.
      */
-    COMPLETED_TASKS
+    COMPLETED_TASKS(
+        R.string.label_completed,
+        R.string.no_tasks_completed,
+        R.drawable.ic_verified_user_96dp
+    )
 }
