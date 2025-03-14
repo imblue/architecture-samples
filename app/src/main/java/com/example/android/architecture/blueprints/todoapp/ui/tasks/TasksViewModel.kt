@@ -117,6 +117,12 @@ class TasksViewModel @Inject constructor(
         _isLoading.value = false
     }
 
+    fun deleteTask(task: Task) = viewModelScope.launch {
+        _isLoading.value = true
+        taskRepository.deleteTask(task.id)
+        _isLoading.value = false
+    }
+
     fun resetUserMessage() {
         _userMessage.value = null
     }

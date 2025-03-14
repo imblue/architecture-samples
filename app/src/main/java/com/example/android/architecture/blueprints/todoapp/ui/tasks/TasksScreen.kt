@@ -20,10 +20,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,16 +31,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -96,6 +101,7 @@ fun TasksScreen(
             onRefresh = viewModel::refresh,
             onTaskClick = onTaskClick,
             onTaskCheckedChange = viewModel::completeTask,
+            onTaskDeleted = viewModel::deleteTask,
             modifier = Modifier.padding(paddingValues)
         )
 
@@ -121,6 +127,7 @@ private fun TasksContent(
     onRefresh: () -> Unit,
     onTaskClick: (Task) -> Unit,
     onTaskCheckedChange: (Task, Boolean) -> Unit,
+    onTaskDeleted: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     PullToRefreshBox(
@@ -152,12 +159,40 @@ private fun TasksContent(
             }
 
             items(tasks, { "task_${it.id}" }) { task ->
-                TaskItem(
+                SwipeToDismissBox(
                     modifier = Modifier.animateItem(),
-                    task = task,
-                    onTaskClick = onTaskClick,
-                    onCheckedChange = { onTaskCheckedChange(task, it) }
-                )
+                    state = rememberSwipeToDismissBoxState(
+                        confirmValueChange = { value ->
+                            if (value == SwipeToDismissBoxValue.EndToStart) {
+                                onTaskDeleted(task)
+                            }
+                            value == SwipeToDismissBoxValue.EndToStart
+                        }
+                    ),
+                    enableDismissFromStartToEnd = false,
+                    enableDismissFromEndToStart = true,
+                    backgroundContent = {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.error)
+                                .padding(all = 16.dp),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                null,
+                                tint = MaterialTheme.colorScheme.onError
+                            )
+                        }
+                    }
+                ) {
+                    TaskItem(
+                        task = task,
+                        onTaskClick = onTaskClick,
+                        onCheckedChange = { onTaskCheckedChange(task, it) }
+                    )
+                }
             }
         }
     }
@@ -165,35 +200,36 @@ private fun TasksContent(
 
 @Composable
 private fun TaskItem(
-    modifier: Modifier = Modifier,
     task: Task,
     onCheckedChange: (Boolean) -> Unit,
     onTaskClick: (Task) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onTaskClick(task) }
-            .padding(all = 16.dp)
-    ) {
-        Checkbox(
-            checked = task.isCompleted,
-            onCheckedChange = onCheckedChange
-        )
-        Text(
-            text = task.titleForList,
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(
-                start = 16.dp
-            ),
-            textDecoration = if (task.isCompleted) {
-                TextDecoration.LineThrough
-            } else {
-                null
-            }
-        )
-    }
+    ListItem(
+        modifier = Modifier,
+        leadingContent = {
+            Checkbox(
+                checked = task.isCompleted,
+                onCheckedChange = onCheckedChange
+            )
+        },
+        headlineContent = {
+            Text(
+                text = task.titleForList,
+                textDecoration = if (task.isCompleted) {
+                    TextDecoration.LineThrough
+                } else {
+                    null
+                }
+            )
+        },
+        supportingContent = {
+            Text(
+                text = task.description,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    )
 }
 
 @Composable
@@ -261,6 +297,7 @@ private fun TasksContentPreview() {
                 noTasksIconRes = R.drawable.logo_no_fill,
                 onRefresh = { },
                 onTaskClick = { },
+                onTaskDeleted = { },
                 onTaskCheckedChange = { _, _ -> },
             )
         }
@@ -280,6 +317,7 @@ private fun TasksContentEmptyPreview() {
                 noTasksIconRes = R.drawable.logo_no_fill,
                 onRefresh = { },
                 onTaskClick = { },
+                onTaskDeleted = { },
                 onTaskCheckedChange = { _, _ -> },
             )
         }
