@@ -88,12 +88,6 @@ class TasksViewModel @Inject constructor(
     init {
         route.userMessage?.let { showSnackbarMessage(it) }
         refresh()
-
-        viewModelScope.launch {
-            while(true) {
-                taskRepository.createTask(UUID.randomUUID().toString(), "description")
-            }
-        }
     }
 
     fun setFiltering(requestType: TasksFilterType) {
