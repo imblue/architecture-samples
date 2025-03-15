@@ -26,11 +26,19 @@ import kotlinx.serialization.Serializable
  */
 sealed class TodoDestinations {
 
+    /**
+     * "data class" can be used to define routes
+     * with parameters.
+     */
     @Serializable
     data class TaskList(
         @StringRes val userMessage: Int? = null
     ) : TodoDestinations()
 
+    /**
+     * "data object" can be used to define routes
+     * without parameters.
+     */
     @Serializable
     data object Statistics : TodoDestinations()
 
@@ -47,7 +55,7 @@ sealed class TodoDestinations {
 }
 
 /**
- * Models the navigation actions in the app.
+ * Wrapper for the nav controller that handles the navigation actions within the app.
  */
 class TodoNavigationActions(private val navController: NavHostController) {
 
@@ -55,10 +63,18 @@ class TodoNavigationActions(private val navController: NavHostController) {
         val navigatesFromDrawer = userMessage == null
 
         navController.navigate(TodoDestinations.TaskList(userMessage)) {
+            // "popUpTo" pops all destinations off the back stack
+            // -> the start destination (i.e. TodoDestinations.TaskList)
+            // will be the only route left in the back stack.
+            // If the user presses the "back button", while this screen is opened,
+            // the App will be closed as there is no back stack to navigate to.
             popUpTo(navController.graph.findStartDestination().id) {
                 inclusive = !navigatesFromDrawer
                 saveState = navigatesFromDrawer
             }
+
+            // Use "launchSingleTop" to avoid copies of the same destination in the backstack
+            // if opened multiple times.
             launchSingleTop = true
             restoreState = navigatesFromDrawer
         }
@@ -68,14 +84,14 @@ class TodoNavigationActions(private val navController: NavHostController) {
         navController.navigate(TodoDestinations.Statistics) {
             // Pop up to the start destination of the graph to
             // avoid building up a large stack of destinations
-            // on the back stack as users select items
+            // on the back stack as users select items within the navigation drawer.
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
             }
             // Avoid multiple copies of the same destination when
-            // reselecting the same item
+            // re-selecting the same item
             launchSingleTop = true
-            // Restore state when reselecting a previously selected item
+            // Restore state when re-selecting a previously selected item
             restoreState = true
         }
     }

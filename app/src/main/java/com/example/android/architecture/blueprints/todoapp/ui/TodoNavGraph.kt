@@ -16,13 +16,11 @@
 
 package com.example.android.architecture.blueprints.todoapp.ui
 
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,29 +31,43 @@ import com.example.android.architecture.blueprints.todoapp.ui.statistics.Statist
 import com.example.android.architecture.blueprints.todoapp.ui.taskdetail.TaskDetailScreen
 import com.example.android.architecture.blueprints.todoapp.ui.tasks.TasksScreen
 import com.example.android.architecture.blueprints.todoapp.util.AppModalDrawer
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * Contains the full nav graph of the app.
+ *
+ * Navigation using compose works with "routes",
+ * which could either be String-Values like in Web-Apps,
+ * or via [Serializable] classes like in this example.
+ *
+ * Advantage of using [Serializable] "routes" is the
+ * easy way of passing parameters, including complex data classes.
+ *
+ * [String] routes on the other hand can only handle parameters
+ * as "path" or "query" parameters, making it difficult to pass
+ * complex data structures.
+ */
 @Composable
-fun TodoNavGraph(
-    navController: NavHostController = rememberNavController(),
-    coroutineScope: CoroutineScope = rememberCoroutineScope(),
-    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
-    navActions: TodoNavigationActions = remember(navController) {
-        TodoNavigationActions(navController)
-    }
-) {
-    val navController = rememberNavController()
+fun TodoNavGraph() {
     val scope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
+    // The nav controller can be used to navigate between different routes
+    val navController = rememberNavController()
     val navActions = remember(navController) { TodoNavigationActions(navController) }
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     NavHost(
         navController = navController,
         startDestination = TodoDestinations.TaskList()
     ) {
+        // This create a "route" for the @Serializable TodoDestinations.TaskList.
+        // To navigate to this destination, initiate the data class with the desired parameters
+        // and use the nav controller to navigate to the route.
         composable<TodoDestinations.TaskList> { entry ->
+            // This retrieves the data class instance including its property values.
             val route: TodoDestinations.TaskList = entry.toRoute()
+
             AppModalDrawer(drawerState, route, navActions) {
                 TasksScreen(
                     onAddTask = { navActions.navigateToAddEditTask(R.string.add_task, null) },

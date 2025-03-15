@@ -24,6 +24,11 @@ import timber.log.Timber.DebugTree
 /**
  * Application that sets up Timber in the DEBUG BuildConfig.
  * Read Timber's documentation for production setups.
+ *
+ * "Application" is the highest layer inside an Android App, and
+ * initiated before any Activity is started.
+ *
+ * Used for general setups (like HILT oder Timber) and configuration values.
  */
 @HiltAndroidApp
 class TodoApplication : Application() {

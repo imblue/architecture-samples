@@ -19,7 +19,7 @@ package com.example.android.architecture.blueprints.todoapp.ui.statistics
 import com.example.android.architecture.blueprints.todoapp.data.Task
 
 /**
- * Function that does some trivial computation. Used to showcase unit tests.
+ * Function that does some trivial computation.
  */
 fun getActiveAndCompletedStats(tasks: List<Task>): StatsResult {
 

@@ -48,6 +48,10 @@ import com.example.android.architecture.blueprints.todoapp.ui.TodoDestinations
 import com.example.android.architecture.blueprints.todoapp.ui.TodoNavigationActions
 import kotlinx.coroutines.launch
 
+/**
+ * Uses the material3 navigation drawer.
+ * This should be wrapped around any screen that provides the navigation drawer.
+ */
 @Composable
 fun AppModalDrawer(
     drawerState: DrawerState,
@@ -83,8 +87,10 @@ private fun AppDrawer(
     ModalDrawerSheet {
         DrawerHeader()
 
+        // "NavigationDrawerItem" is the default material3 implementation
+        // of a clickable action inside the navigation drawer.
+        // It supports adding icons, labels and selection markers by default.
         NavigationDrawerItem(
-            modifier = modifier.padding(end = 16.dp),
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_list),
@@ -97,11 +103,16 @@ private fun AppDrawer(
                 navigateToTasks()
                 closeDrawer()
             },
-            shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50)
+            // The default shape is with a round corner on all sides.
+            // To "beautify" this slighty, we use a custom shape
+            // to only round the corners on the right ("end") side
+            // with a small space to the end of the drawer.
+            // The left ("start") in this case is not round.
+            shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50),
+            modifier = modifier.padding(end = 16.dp)
         )
 
         NavigationDrawerItem(
-            modifier = modifier.padding(end = 16.dp),
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_statistics),
@@ -114,11 +125,16 @@ private fun AppDrawer(
                 navigateToStatistics()
                 closeDrawer()
             },
-            shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50)
+            shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50),
+            modifier = modifier.padding(end = 16.dp)
         )
     }
 }
 
+/**
+ * While "action" items come with a default styling,
+ * a custom layout can be added for styling purposes.
+ */
 @Composable
 private fun DrawerHeader() {
     Column(

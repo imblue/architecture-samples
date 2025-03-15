@@ -24,7 +24,9 @@ plugins {
 }
 
 android {
+    // Namespace is used for the AndroidManifest.xml
     namespace = "com.example.android.architecture.blueprints.todoapp"
+
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
