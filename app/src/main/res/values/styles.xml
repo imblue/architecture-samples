@@ -16,7 +16,16 @@
 -->
 <resources>
 
-    <!-- Base application theme. --><style name="AppTheme" parent="Base.AppTheme" />
+    <!--
+        Base application theme.
+        Note:
+        For compose only Apps the Theming in XML should not have any effect.
+        If edgeToEdge is not used in the Activity, the Status-Bar color can be set here.
+        For anything else, the MaterialTheme (material3) should be used.
+        See com.example.android.architecture.blueprints.todoapp.ui.AppThemeKt.AppTheme
+    -->
+
+    <style name="AppTheme" parent="Base.AppTheme" />
 
     <style name="AppTheme.OverlapSystemBar" parent="Base.AppTheme">
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
@@ -29,9 +38,5 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <!-- For Android sdk versions 26+. -->
-        <item name="android:fontFamily">@font/opensans_font</item>
-        <!-- Target Android sdk versions < 26 and > 14. -->
-        <item name="fontFamily">@font/opensans_font</item>
     </style>
 </resources>

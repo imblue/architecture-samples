@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+/*
+ * build.gradle is the main configuration file for compiling
+ * info and dependency management.
+ */
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -33,9 +38,15 @@ android {
         applicationId = "com.example.android.architecture.blueprints.main"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
+
+        // Version-Code will be used for the App Store, and checked by
+        // the OS during installation and updates (e.g. you can not install an
+        // App with version 2 if an App with version code 3 is already installed).
         versionCode = 1
+        // Version-Name is a string representation, which can be shown to users.
         versionName = "1.0"
 
+        // Necessary to setup the database library "room"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += "room.incremental" to "true"
@@ -43,10 +54,17 @@ android {
         }
     }
 
+    // build types can be used to create different versions of your App.
+    // e.g. having a debuggable version available for development,
+    // and a release version with minification and other optimizations
+    // for playstore uploads.
     buildTypes {
+        // "debug" and "release" are added by default
         getByName("debug") {
             isMinifyEnabled = false
             isDebuggable = true
+            // Adapt the application ID to be able to install both versions simultaneously
+            applicationIdSuffix = ".debug"
         }
 
         getByName("release") {
@@ -56,10 +74,15 @@ android {
 
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
+
+        // Additional build types can be added using `create("myBuildType")`
     }
 
     flavorDimensions += "mode"
 
+    // Additional flavors can be added depending on the projects needs.
+    // e.g. having a mock/demo version with a faked backend implementation,
+    // ready to be used if the backend is not available.
     productFlavors {
         create("demo") {
             dimension = "mode"

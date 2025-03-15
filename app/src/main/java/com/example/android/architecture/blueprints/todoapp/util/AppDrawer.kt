@@ -150,7 +150,7 @@ private fun DrawerHeader() {
             painter = painterResource(id = R.drawable.logo_no_fill),
             contentDescription =
                 stringResource(id = R.string.tasks_header_image_content_description),
-            modifier = Modifier.width(dimensionResource(id = R.dimen.header_image_width))
+            modifier = Modifier.width(100.dp)
         )
         Text(
             text = stringResource(id = R.string.navigation_view_header_title),
