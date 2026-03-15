@@ -91,6 +91,8 @@ android {
         }
         create("prod") {
             dimension = "mode"
+
+            buildConfigField("String", "SERVER_URL", "\"backend.dev/tasks\"")
         }
     }
 
@@ -148,6 +150,8 @@ dependencies {
 
     // Kotlin Serialization
     implementation(libs.kotlinx.serialization.core)
+
+    implementation(libs.bundles.ktor.client)
 
     // Jetpack Compose
     val composeBom = platform(libs.androidx.compose.bom)

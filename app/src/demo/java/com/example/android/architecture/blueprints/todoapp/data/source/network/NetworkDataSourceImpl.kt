@@ -21,6 +21,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
+/**
+ * This is a mock/demo implementation for a remote data source.
+ */
 class NetworkDataSourceImpl @Inject constructor() : NetworkDataSource {
 
     // A mutex is used to ensure that reads and writes are thread-safe.
@@ -43,9 +46,9 @@ class NetworkDataSourceImpl @Inject constructor() : NetworkDataSource {
         return tasks
     }
 
-    override suspend fun saveTasks(newTasks: List<TaskNetwork>) = accessMutex.withLock {
+    override suspend fun saveTasks(tasks: List<TaskNetwork>) = accessMutex.withLock {
         delay(SERVICE_LATENCY_IN_MILLIS)
-        tasks = newTasks
+        this.tasks = tasks
     }
 }
 
